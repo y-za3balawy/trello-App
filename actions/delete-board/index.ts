@@ -8,6 +8,7 @@ import { DeleteBoardSchema } from "./schema";
 import { redirect } from "next/navigation";
 import { createAuditLog } from "@/lib/create-audit-log";
 import { ACTION, ENTITY_TYPE } from "@prisma/client";
+import { decreaseAvailableCount } from "@/lib/org-limit";
 
 
 
@@ -25,7 +26,7 @@ const handler = async (data: InputType): Promise<ReturnType> => {
   let board;
   try {
     board = await db.board.delete({
-      where: {
+      where: { 
         id,
         orgId,
       },
@@ -37,6 +38,9 @@ const handler = async (data: InputType): Promise<ReturnType> => {
       entityType: ENTITY_TYPE.BOARD,
     });
    
+
+    await decreaseAvailableCount()
+
   } catch (error) {
     return {
       error: "Failed to delete board.",
